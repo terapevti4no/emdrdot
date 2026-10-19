@@ -62,3 +62,29 @@
 .path-preview span:first-child,.path-preview span:last-child{width:2px;height:2px;opacity:.18}
 
 :root:fullscreen .settings-main{margin-top:4px}
+
+.orientation-hint{display:none}
+@media (max-width:600px) and (orientation:portrait) and (pointer:coarse){
+  .fullscreen-hint .orientation-hint{display:block;margin-top:8px;color:var(--accent)}
+}
+
+/* Touch layouts, including landscape phones and display cutouts. */
+@media (pointer:coarse) and (max-width:1024px){
+  .app-shell{padding:env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left)}
+  .practice{inset:env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left)}
+  .practice-controls small{display:none}
+  .practice-controls{bottom:16px;gap:8px;min-width:0;width:100%;padding:0 16px}
+  .practice-controls button{min-height:44px;min-width:100px}
+  .practice-message{padding:16px 20px 110px;overflow-y:auto}
+  .practice.is-done .practice-message{padding:20px;pointer-events:auto}
+  .number-wrap input{font-size:16px}
+}
+@media (pointer:coarse) and (max-width:1024px) and (max-height:500px){
+  .practice-message{padding:8px 16px 88px}
+  .practice-message .eyebrow{margin-bottom:4px}
+  .practice-message h1{font-size:24px;margin:4px 0 8px}
+  .count-number{font-size:44px;line-height:1.1}
+  .practice-message button{margin-top:8px;min-height:44px;padding:10px 20px}
+  .practice-controls{bottom:8px;gap:4px}
+  .complete-symbol{width:36px;height:36px;font-size:20px;margin-bottom:8px;flex-shrink:0}
+}
