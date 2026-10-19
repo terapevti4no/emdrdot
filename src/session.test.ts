@@ -27,5 +27,13 @@ test('zero rest advances immediately and last set has no trailing rest', () => {
 });
 test('invalid saved settings cannot create invalid timing', () => {
   const s = sanitize({ cycleMs: 0, sets: -5, rest: NaN, mode: 'broken' });
-  assert.equal(s.cycleMs, 200); assert.equal(s.sets, 1); assert.equal(s.rest, 10); assert.equal(s.mode, 'cycles');
+  assert.equal(s.cycleMs, 1); assert.equal(s.sets, 1); assert.equal(s.rest, 10); assert.equal(s.mode, 'cycles');
+});
+test('only countdown allows zero; other numeric settings have a minimum of one', () => {
+  const s = sanitize({ countdown: 0, cycleMs: 0, cycles: 0, duration: 0, sets: 0, rest: 0 });
+  assert.equal(s.countdown, 0);
+  assert.equal(sanitize({ countdown: -1 }).countdown, 0);
+  for (const key of ['cycleMs', 'cycles', 'duration', 'sets', 'rest'] as const) {
+    assert.equal(s[key], 1);
+  }
 });

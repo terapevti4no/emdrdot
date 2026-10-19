@@ -15,6 +15,7 @@ type Props = {
 export default function SettingsScreen({ settings, setSettings, lang, setLang, theme, setTheme, onStart }: Props) {
     const [fullscreen, setFullscreen] = useState(false);
     const [error, setError] = useState('');
+    const [drafts, setDrafts] = useState<Partial<Record<keyof typeof limits, string>>>({});
     const t = messages[lang];
     useEffect(() => { const update = () => setFullscreen(!!document.fullscreenElement); document.addEventListener('fullscreenchange', update); return () => document.removeEventListener('fullscreenchange', update); }, []);
     async function toggleFullscreen() { try {
@@ -30,7 +31,42 @@ export default function SettingsScreen({ settings, setSettings, lang, setLang, t
     const seconds = (ms: number) => new Intl.NumberFormat(lang, { maximumFractionDigits: 1 }).format(ms / 1000);
     const total = settings.countdown * 1000 + setDuration(settings) * settings.sets + settings.rest * 1000 * (settings.sets - 1);
     function field(key: keyof typeof limits, label: string, unit?: string, help?: string) {
-        return <label className="field" htmlFor={key}><span>{label}</span><div className="number-wrap"><input id={key} type="number" required min={limits[key][0]} max={limits[key][1]} step="1" value={settings[key]} onChange={e => { const n = e.target.valueAsNumber; setSettings(s => ({ ...s, [key]: Number.isNaN(n) ? 0 : n })); }} onBlur={() => setSettings(s => sanitize(s))}/>{unit && <span className="unit">{unit}</span>}</div>{help && <small>{help}</small>}</label>;
+        return (
+            <label className="field" htmlFor={key}>
+                <span>{label}</span>
+                <div className="number-wrap">
+                    <input
+                        id={key}
+                        type="number"
+                        required
+                        min={limits[key][0]}
+                        max={limits[key][1]}
+                        step="1"
+                        value={drafts[key] ?? settings[key]}
+                        onChange={e => {
+                            const value = e.target.value;
+                            const number = e.target.valueAsNumber;
+                            setDrafts(current => ({ ...current, [key]: value }));
+                            if (Number.isFinite(number)) {
+                                setSettings(current => ({ ...current, [key]: number }));
+                            }
+                        }}
+                        onBlur={e => {
+                            // React may retain the input's spelling when its numeric value is unchanged.
+                            e.currentTarget.value = String(sanitize(settings)[key]);
+                            setSettings(current => sanitize(current));
+                            setDrafts(current => {
+                                const next = { ...current };
+                                delete next[key];
+                                return next;
+                            });
+                        }}
+                    />
+                    {unit && <span className="unit">{unit}</span>}
+                </div>
+                {help && <small>{help}</small>}
+            </label>
+        );
     }
-    return <div className="app-shell"><header className="header"><a className="brand" href="./" aria-label="EMDR Dot"><span className="brand-mark"><i /><i /><i /></span>emdr<span className="brand-dot">dot</span></a><div className="preferences"><div className="languages" role="group" aria-label={lang === 'ru' ? 'Язык' : 'Language'}><button type="button" aria-pressed={lang === 'ru'} onClick={() => setLang('ru')}>RU</button><button type="button" aria-pressed={lang === 'en'} onClick={() => setLang('en')}>EN</button></div><span className="divider"/><button className="theme-button" type="button" onClick={() => setTheme(value => value === 'light' ? 'dark' : 'light')} aria-label={theme === 'light' ? t.dark : t.light} title={theme === 'light' ? t.dark : t.light}><Icon name={theme === 'light' ? 'moon' : 'sun'}/></button></div></header><main className="settings-main"><section className="intro"><p className="eyebrow">{t.eyebrow}</p><h1>{t.title}</h1><p>{t.intro}</p><div className="path-preview" aria-hidden="true"><span /><span /><span /><i /><span /><span /><span /></div></section><form className="settings-card" onSubmit={e => { e.preventDefault(); setSettings(s => sanitize(s)); onStart(); }}><div className="card-heading"><h2>{t.setup}</h2><button type="button" className="text-button" onClick={() => setSettings({ ...defaults })}>{t.reset}</button></div><fieldset className="mode-field"><legend>{t.mode}</legend><div className="mode-toggle"><button type="button" aria-pressed={settings.mode === 'cycles'} onClick={() => setSettings(s => ({ ...s, mode: 'cycles' }))}>{t.byCycles}</button><button type="button" aria-pressed={settings.mode === 'time'} onClick={() => setSettings(s => ({ ...s, mode: 'time' }))}>{t.byTime}</button></div></fieldset><div className="field-grid">{field('cycleMs', t.cycleMs, t.ms, t.cycleHelp)}{settings.mode === 'cycles' ? field('cycles', t.cycles) : field('duration', t.duration, t.sec)}{field('sets', t.sets)}{field('rest', t.rest, t.sec)}{field('countdown', t.countdown, t.sec)}</div>{settings.mode === 'time' && <p className="mode-note">{t.timeModeHelp}</p>}<div className="summary"><div><span>{t.summarySet}</span><strong>{seconds(setDuration(settings))} <small>{t.sec}</small></strong></div><div><span>{t.summaryTotal}</span><strong>{seconds(total)} <small>{t.sec}</small></strong></div>{settings.mode === 'time' && <div><span>{t.summaryCycles}</span><strong>≈ {new Intl.NumberFormat(lang, { maximumFractionDigits: 1 }).format(settings.duration * 1000 / settings.cycleMs)}</strong></div>}</div><div className="fullscreen-hint"><Icon name="expand"/><div><p>{t.hint} <button type="button" className="text-button" onClick={toggleFullscreen}>{fullscreen ? t.exitFullscreen : t.fullscreen}</button></p></div></div>{error && <p className="error" role="status">{error}</p>}<button type="submit" className="primary start-button">{t.start}<Icon name="arrow"/></button></form><p className="footer-note">{t.footer}</p></main><footer className="page-footer">EMDR DOT <span>·</span> {lang === 'ru' ? 'Простой инструмент визуальной стимуляции' : 'A simple visual stimulation tool'}</footer></div>;
+    return <div className="app-shell"><header className="header"><a className="brand" href="./" aria-label="EMDR Dot"><span className="brand-mark"><i /><i /><i /></span>emdr<span className="brand-dot">dot</span></a><div className="preferences"><div className="languages" role="group" aria-label={lang === 'ru' ? 'Язык' : 'Language'}><button type="button" aria-pressed={lang === 'ru'} onClick={() => setLang('ru')}>RU</button><button type="button" aria-pressed={lang === 'en'} onClick={() => setLang('en')}>EN</button></div><span className="divider"/><button className="theme-button" type="button" onClick={() => setTheme(value => value === 'light' ? 'dark' : 'light')} aria-label={theme === 'light' ? t.dark : t.light} title={theme === 'light' ? t.dark : t.light}><Icon name={theme === 'light' ? 'moon' : 'sun'}/></button></div></header><main className="settings-main"><section className="intro"><p className="eyebrow">{t.eyebrow}</p><h1>{t.title}</h1><p>{t.intro}</p><div className="path-preview" aria-hidden="true"><span /><span /><span /><i /><span /><span /><span /></div></section><form className="settings-card" onSubmit={e => { e.preventDefault(); setSettings(s => sanitize(s)); onStart(); }}><div className="card-heading"><h2>{t.setup}</h2><button type="button" className="text-button" onClick={() => { setSettings({ ...defaults }); setDrafts({}); }}>{t.reset}</button></div><fieldset className="mode-field"><legend>{t.mode}</legend><div className="mode-toggle"><button type="button" aria-pressed={settings.mode === 'cycles'} onClick={() => setSettings(s => ({ ...s, mode: 'cycles' }))}>{t.byCycles}</button><button type="button" aria-pressed={settings.mode === 'time'} onClick={() => setSettings(s => ({ ...s, mode: 'time' }))}>{t.byTime}</button></div></fieldset><div className="field-grid">{field('cycleMs', t.cycleMs, t.ms, t.cycleHelp)}{settings.mode === 'cycles' ? field('cycles', t.cycles) : field('duration', t.duration, t.sec)}{field('sets', t.sets)}{field('rest', t.rest, t.sec)}{field('countdown', t.countdown, t.sec)}</div>{settings.mode === 'time' && <p className="mode-note">{t.timeModeHelp}</p>}<div className="summary"><div><span>{t.summarySet}</span><strong>{seconds(setDuration(settings))} <small>{t.sec}</small></strong></div><div><span>{t.summaryTotal}</span><strong>{seconds(total)} <small>{t.sec}</small></strong></div>{settings.mode === 'time' && <div><span>{t.summaryCycles}</span><strong>≈ {new Intl.NumberFormat(lang, { maximumFractionDigits: 1 }).format(settings.duration * 1000 / settings.cycleMs)}</strong></div>}</div><div className="fullscreen-hint"><Icon name="expand"/><div><p>{t.hint} <button type="button" className="text-button" onClick={toggleFullscreen}>{fullscreen ? t.exitFullscreen : t.fullscreen}</button></p></div></div>{error && <p className="error" role="status">{error}</p>}<button type="submit" className="primary start-button">{t.start}<Icon name="arrow"/></button></form><p className="footer-note">{t.footer}</p></main><footer className="page-footer">EMDR DOT <span>·</span> {lang === 'ru' ? 'Простой инструмент визуальной стимуляции' : 'A simple visual stimulation tool'}</footer></div>;
 }

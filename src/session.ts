@@ -1,7 +1,7 @@
 export type Mode = 'cycles' | 'time';
 export interface Settings { mode: Mode; countdown: number; cycleMs: number; cycles: number; duration: number; sets: number; rest: number }
 export const defaults: Settings = { mode: 'cycles', countdown: 5, cycleMs: 1500, cycles: 20, duration: 30, sets: 3, rest: 10 };
-export const limits = { countdown: [0, 120], cycleMs: [200, 20000], cycles: [1, 1000], duration: [1, 3600], sets: [1, 100], rest: [0, 600] } as const;
+export const limits = { countdown: [0, 120], cycleMs: [1, 20000], cycles: [1, 1000], duration: [1, 3600], sets: [1, 100], rest: [1, 600] } as const;
 export function sanitize(input: unknown): Settings {
   const value = input && typeof input === 'object' ? input as Record<string, unknown> : {};
   const result = { ...defaults, mode: value.mode === 'time' ? 'time' : 'cycles' } as Settings;
