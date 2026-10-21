@@ -1,37 +1,16 @@
-import { defaults, sanitize, type Settings } from './session';
-import type { Lang } from './i18n';
-export type Theme = 'light' | 'dark';
-type Preferences = {
-    settings: Settings;
-    lang: Lang;
-    theme: Theme;
-};
-function preferredTheme(): Theme {
-    return window.matchMedia?.('(prefers-color-scheme: light)').matches ? 'light' : 'dark';
+import { readPreferences, type Theme } from '@terapevti4no/ui';
+import { sanitize, type Settings } from './session';
+export type { Theme };
+function record(): Record<string, unknown> {
+  try {
+    const value = JSON.parse(localStorage.getItem('emdrdot:v1') || '{}');
+    return value && typeof value === 'object' && !Array.isArray(value) ? value : {};
+  } catch { return {}; }
 }
-function preferredLanguage(): Lang {
-    const locale = navigator.languages?.[0] || navigator.language;
-    return locale?.toLowerCase().split('-')[0] === 'ru' ? 'ru' : 'en';
+export function readSaved() {
+  return { ...readPreferences({ storageKey: 'emdrdot:v1', fallbackKeys: ['terapevti4no:v1'] }), settings: sanitize(record().settings as Partial<Settings>) };
 }
-export function readSaved(): {
-    settings: Settings;
-    lang: Lang;
-    theme: Theme;
-} {
-    try {
-        const s = JSON.parse(localStorage.getItem('emdrdot:v1') || '{}');
-        const theme = s.theme;
-        return { settings: sanitize(s.settings), lang: s.lang === 'en' || s.lang === 'ru' ? s.lang : preferredLanguage(), theme: theme === 'light' || theme === 'dark' ? theme : preferredTheme() };
-    }
-    catch {
-        return { settings: defaults, lang: preferredLanguage(), theme: preferredTheme() };
-    }
-}
-export function savePreferences(preferences: Preferences) {
-    try {
-        localStorage.setItem('emdrdot:v1', JSON.stringify(preferences));
-    }
-    catch {
-        // Storage can be disabled by browser privacy settings.
-    }
+export function saveSettings(settings: Settings) {
+  try { localStorage.setItem('emdrdot:v1', JSON.stringify({ ...record(), settings })); }
+  catch { /* Practice also works with browser storage disabled. */ }
 }

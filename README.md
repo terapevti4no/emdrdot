@@ -19,28 +19,22 @@ The default timing is an interface preset, not a clinical protocol. This tool pr
 
 ## GitHub Actions and Pages
 
-The `Build and deploy` workflow installs dependencies, runs tests and builds the site on pushes and pull requests to `main`. The Pages artifact uses `/emdrdot/` as its base URL; local development keeps the default `/` base.
+Pushes and pull requests to `main` run timer tests and the production build with `/emdrdot/` as its base. GitHub Pages serves the `dist` artifact through GitHub Actions; only `main` deploys, with `PAGES_ENABLED=true` as the repository switch. The site is published at https://terapevti4no.github.io/emdrdot/.
 
-Deployment is disabled until the repository variable `PAGES_ENABLED` is set to `true`. To enable publication while keeping this repository private:
+## Shared React UI
 
-1. Use a GitHub plan that supports Pages for private repositories (GitHub Pro for a personal account).
-2. In Settings → Pages, select **GitHub Actions** as the source.
-3. In Settings → Secrets and variables → Actions → Variables, create `PAGES_ENABLED` with value `true`.
-4. Run `Build and deploy` from the Actions tab, or push to `main`.
-
-The published site will be at https://goelmarina.github.io/emdrdot/. The site itself will be publicly accessible; the repository remains private. No personal access token or deployment secret is needed by the workflow.
-
-## Shared UI styles
-
-Shared typography, theme tokens, layout and components are released in [terapevti4no/ui](https://github.com/terapevti4no/ui). The checked-in `vendor/terapevti4no-ui/ui.css` is loaded before project-specific styles. Do not edit vendor files directly.
-
-From this project's root, with Node 22 or newer:
+`@terapevti4no/ui` supplies the layout, parent/tool logos, theme/language controls, text-only page intro, content container, information note, footer and icons. It is installed from a versioned npm archive in [GitHub Releases](https://github.com/terapevti4no/ui/releases); `package-lock.json` pins integrity. There is no vendor directory. Tool-specific fields, settings, timing and practice behavior remain in this project.
 
 ```sh
-node scripts/update-ui.mjs --version 0.1.1
-node scripts/update-ui.mjs --check --version 0.1.1
+npm run ui:check
+npm run ui:update -- --latest
+npm run ui:update -- --version 0.2.1
 ```
 
-The updater downloads the exact GitHub release tag and records its commit and CSS SHA-256 in `vendor/terapevti4no-ui/version.json`. No local UI checkout or extra dependencies are required. Commit the vendor update after review. To roll back, use an earlier published version. Normal development, builds and site visits use the local copy and do not contact GitHub.
+The shared preference hook reads the existing `emdrdot:v1` record and preserves its settings. Missing theme/language fields can reuse the main site's `terapevti4no:v1` record. Timer settings are saved separately by merging the existing record. The shared blocking head script applies saved preferences before first paint.
 
-The parent-brand SVG is maintained in `terapevti4no/ui/assets/terapevti4no.svg`. Both headers reference that shared symbol; do not duplicate its paths in application markup. The updater installs its assets with checksums.
+### Automatic library updates
+
+The Pages workflow checks for a new stable UI release four times an hour. It installs newer versions, runs timer tests and the production build, commits the verified package/lockfile update and deploys in the same run. GitHub may delay scheduled jobs. A failing update is not committed or deployed. Existing `PAGES_ENABLED=true` remains the deployment switch.
+
+Run **Build and deploy** (`pages.yml`) manually to update/deploy immediately. Set `UI_AUTO_UPDATE=false` to stop scheduled updates. To hold a rollback, disable scheduled updates and install an earlier compatible package version. CSS-only UI versions before 0.2.0 are not compatible.

@@ -7,9 +7,12 @@
     "dev": "vite --host 127.0.0.1",
     "build": "tsc -b && vite build",
     "test": "node --experimental-strip-types src/session.test.ts",
-    "preview": "vite preview --host 127.0.0.1"
+    "preview": "vite preview --host 127.0.0.1",
+    "ui:update": "terapevti4no-ui",
+    "ui:check": "terapevti4no-ui --latest --check"
   },
   "dependencies": {
+    "@terapevti4no/ui": "https://github.com/terapevti4no/ui/releases/download/v0.2.1/terapevti4no-ui-0.2.1.tgz",
     "react": "^19.2.0",
     "react-dom": "^19.2.0"
   },

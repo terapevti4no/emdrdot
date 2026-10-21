@@ -460,25 +460,3 @@
     flex-shrink: 0;
   }
 }
-
-/* Parent brand and tool wordmark share the header. */
-.brand-pair{display:flex;align-items:center;gap:16px;min-width:0}
-.brand-pair .brand{white-space:nowrap}
-.terapevti4no-brand .brand-mark{color:var(--accent);flex-shrink:0}
-.brand-separator{width:1px;height:24px;background:var(--border);flex-shrink:0}
-@media(max-width:720px){
-  .header{height:auto;min-height:56px;flex-wrap:wrap;gap:12px;padding:12px 22px}
-  .header .preferences{margin-left:auto}
-  .brand-pair{gap:12px}
-}
-@media(max-width:560px){
-  .header .brand-pair .brand{font-size:18px}
-  .brand-pair .brand-mark{margin-right:7px}
-  .terapevti4no-brand svg{width:28px;height:28px}
-}
-@media(max-width:380px){
-  .header{padding-left:14px;padding-right:14px}
-  .header .brand-pair .brand{font-size:16px}
-  .brand-pair{gap:9px}
-  .terapevti4no-brand svg{width:24px;height:24px}
-}

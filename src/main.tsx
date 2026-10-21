@@ -1,6 +1,6 @@
 import React from 'react';
 import { createRoot } from 'react-dom/client';
 import App from './App';
-import '../vendor/terapevti4no-ui/ui.css';
+import '@terapevti4no/ui/styles.css';
 import './style.css';
 createRoot(document.getElementById('root')!).render(<React.StrictMode><App /></React.StrictMode>);
