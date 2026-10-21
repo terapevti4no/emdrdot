@@ -37,8 +37,10 @@ Shared typography, theme tokens, layout and components are released in [terapevt
 From this project's root, with Node 22 or newer:
 
 ```sh
-node scripts/update-ui.mjs --version 0.1.0
-node scripts/update-ui.mjs --check --version 0.1.0
+node scripts/update-ui.mjs --version 0.1.1
+node scripts/update-ui.mjs --check --version 0.1.1
 ```
 
 The updater downloads the exact GitHub release tag and records its commit and CSS SHA-256 in `vendor/terapevti4no-ui/version.json`. No local UI checkout or extra dependencies are required. Commit the vendor update after review. To roll back, use an earlier published version. Normal development, builds and site visits use the local copy and do not contact GitHub.
+
+The parent-brand SVG is maintained in `terapevti4no/ui/assets/terapevti4no.svg`. Both headers reference that shared symbol; do not duplicate its paths in application markup. The updater installs its assets with checksums.
