@@ -29,3 +29,16 @@ Deployment is disabled until the repository variable `PAGES_ENABLED` is set to `
 4. Run `Build and deploy` from the Actions tab, or push to `main`.
 
 The published site will be at https://goelmarina.github.io/emdrdot/. The site itself will be publicly accessible; the repository remains private. No personal access token or deployment secret is needed by the workflow.
+
+## Shared UI styles
+
+Shared typography, theme tokens, layout and components are released in [terapevti4no/ui](https://github.com/terapevti4no/ui). The checked-in `vendor/terapevti4no-ui/ui.css` is loaded before project-specific styles. Do not edit vendor files directly.
+
+From this project's root, with Node 22 or newer:
+
+```sh
+node scripts/update-ui.mjs --version 0.1.0
+node scripts/update-ui.mjs --check --version 0.1.0
+```
+
+The updater downloads the exact GitHub release tag and records its commit and CSS SHA-256 in `vendor/terapevti4no-ui/version.json`. No local UI checkout or extra dependencies are required. Commit the vendor update after review. To roll back, use an earlier published version. Normal development, builds and site visits use the local copy and do not contact GitHub.
